@@ -51,10 +51,10 @@
         flake = {
           nixosModules.ryanseipp = import ./nix/modules/nixos;
 
-          nixosConfigurations = withSystem "x86_64-linux" (
-            { config, inputs', ... }:
-            {
-              kube-host-1 = inputs.nixpkgs.lib.nixosSystem {
+          nixosConfigurations = {
+            kube-host-1 = withSystem "x86_64-linux" (
+              { config, inputs', ... }:
+              inputs.nixpkgs.lib.nixosSystem {
                 modules = [
                   inputs.self.nixosModules.ryanseipp
                   inputs.disko.nixosModules.disko
@@ -66,9 +66,9 @@
                   inherit inputs inputs';
                   packages = config.packages;
                 };
-              };
-            }
-          );
+              }
+            );
+          };
 
           deploy.nodes.kube-host-1 = {
             hostname = "kube-host-1";
