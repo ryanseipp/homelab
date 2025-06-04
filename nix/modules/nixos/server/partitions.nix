@@ -2,9 +2,11 @@
   lib,
   config,
   ...
-}: let
+}:
+let
   cfg = config.rs-homelab;
-in {
+in
+{
   options = {
     rs-homelab.bootDrive = lib.mkOption {
       type = lib.types.str;
@@ -30,7 +32,7 @@ in {
                   type = "filesystem";
                   format = "vfat";
                   mountpoint = "/boot";
-                  mountOptions = ["umask=0077"];
+                  mountOptions = [ "umask=0077" ];
                 };
               };
               root = {
@@ -47,7 +49,10 @@ in {
                   };
                   settings = {
                     allowDiscards = true;
-                    crypttabExtraOpts = ["tpm2-device=auto" "tpm2-measure-pcr=yes"];
+                    crypttabExtraOpts = [
+                      "tpm2-device=auto"
+                      "tpm2-measure-pcr=yes"
+                    ];
                   };
                 };
               };
@@ -72,7 +77,6 @@ in {
             xattr = "sa";
             mountpoint = "none";
           };
-          postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^rpool/local/root@blank$' || zfs snapshot rpool/local/root@blank";
 
           datasets = {
             local = {
@@ -82,23 +86,27 @@ in {
             safe = {
               type = "zfs_fs";
               options.mountpoint = "none";
-              options."com.sun:auto-snapshot" = "true";
             };
             "local/root" = {
               type = "zfs_fs";
               mountpoint = "/";
+              options."com.sun:auto-snapshot" = "false";
+              postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^rpool/local/root@blank$' || zfs snapshot rpool/local/root@blank";
             };
             "local/nix" = {
               type = "zfs_fs";
               mountpoint = "/nix";
+              options."com.sun:auto-snapshot" = "false";
             };
             "safe/persist" = {
               type = "zfs_fs";
               mountpoint = "/persist";
+              options."com.sun:auto-snapshot" = "true";
             };
             "safe/home" = {
               type = "zfs_fs";
               mountpoint = "/home";
+              options."com.sun:auto-snapshot" = "true";
             };
           };
         };
@@ -110,7 +118,10 @@ in {
     fileSystems."/proc" = {
       device = "proc";
       fsType = "proc";
-      options = ["defaults" "hidepid=2"];
+      options = [
+        "defaults"
+        "hidepid=2"
+      ];
       neededForBoot = true;
     };
   };

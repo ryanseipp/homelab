@@ -3,9 +3,11 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.rs-homelab.server;
-in {
+in
+{
   imports = [
     ./hardening.nix
     ./networking.nix

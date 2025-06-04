@@ -3,10 +3,17 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.rs-homelab.server.networking;
-  cloudflareNameservers = ["2606:4700:4700::1111" "2606:4700:4700::1001" "1.1.1.1" "1.0.0.1"];
-in {
+  cloudflareNameservers = [
+    "2606:4700:4700::1111"
+    "2606:4700:4700::1001"
+    "1.1.1.1"
+    "1.0.0.1"
+  ];
+in
+{
   options = {
     rs-homelab.server.networking.enable = lib.mkEnableOption "Enables common networking settings";
   };
@@ -24,7 +31,6 @@ in {
       "net.ipv4.conf.all.log_martians" = true;
       "net.ipv4.conf.default.log_martians" = true;
 
-      "net.ipv4.conf.all.rp_filter" = true;
       "net.ipv4.conf.all.send_redirects" = false;
     };
 
@@ -41,6 +47,21 @@ in {
       nftables.enable = true;
       nameservers = cloudflareNameservers;
     };
+
+    services.resolved = {
+      enable = true;
+      dnssec = "true";
+      dnsovertls = "true";
+    };
+    services.nscd.enableNsncd = false;
+    services.tailscale = {
+      enable = true;
+      useRoutingFeatures = "server";
+    };
+
+    environment.persistence."/persist".directories = [
+      "/var/lib/tailscale"
+    ];
 
     # CLI tools to debug with
     environment.systemPackages = with pkgs; [

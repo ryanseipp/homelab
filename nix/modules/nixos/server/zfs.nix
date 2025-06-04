@@ -3,9 +3,11 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.rs-homelab.server.zfs;
-in {
+in
+{
   options = {
     rs-homelab.server.zfs.enable = lib.mkEnableOption "Enables common zfs settings";
   };
@@ -14,10 +16,10 @@ in {
     boot.initrd.systemd.enable = true;
     boot.initrd.systemd.services.rollback = {
       description = "Rollback root filesystem to a pristine state";
-      wantedBy = ["initrd.target"];
-      after = ["zfs-import-rpool.service"];
-      before = ["sysroot.mount"];
-      path = with pkgs; [zfs];
+      wantedBy = [ "initrd.target" ];
+      after = [ "zfs-import-rpool.service" ];
+      before = [ "sysroot.mount" ];
+      path = with pkgs; [ zfs ];
       unitConfig.DefaultDependencies = "no";
       serviceConfig.Type = "oneshot";
       script = ''

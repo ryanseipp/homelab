@@ -3,9 +3,11 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.rs-homelab.server.secure-boot;
-in {
+in
+{
   options = {
     rs-homelab.server.secure-boot.enable = lib.mkEnableOption "Enables secure boot";
   };
@@ -15,7 +17,7 @@ in {
       enable = true;
       pkiBundle = "/var/lib/sbctl";
     };
-    environment.persistence."/persist".directories = ["/var/lib/sbctl"];
+    environment.persistence."/persist".directories = [ "/var/lib/sbctl" ];
 
     boot.loader.systemd-boot.enable = lib.mkForce false;
     boot.initrd.systemd.enable = true;
