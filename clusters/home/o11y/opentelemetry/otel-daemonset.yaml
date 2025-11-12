@@ -23,15 +23,15 @@ spec:
         fieldRef:
           fieldPath: status.hostIP
     - name: GOMEMLIMIT
-      value: "204MiB"
+      value: "409MiB"
 
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 256Mi
     limits:
       cpu: 500m
-      memory: 256Mi
+      memory: 512Mi
 
   volumeMounts:
     - name: hostfs
