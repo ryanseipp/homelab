@@ -1,0 +1,29 @@
+---
+# Source: prometheus-node-exporter/templates/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: node-exporter-prometheus-node-exporter
+  namespace: o11y-node-exporter
+  labels:
+    helm.sh/chart: prometheus-node-exporter-4.47.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/part-of: prometheus-node-exporter
+    app.kubernetes.io/name: prometheus-node-exporter
+    app.kubernetes.io/instance: node-exporter
+    app.kubernetes.io/version: "1.9.1"
+spec:
+  jobLabel: app.kubernetes.io/name
+
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-node-exporter
+      app.kubernetes.io/instance: node-exporter
+  attachMetadata:
+    node: false
+  endpoints:
+    - port: metrics
+      scheme: http
+      interval: 30s
+      scrapeTimeout: 10s

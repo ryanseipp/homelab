@@ -1,0 +1,23 @@
+---
+# Source: cilium/templates/cilium-operator/service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: cilium-operator
+  namespace: kube-system
+  labels:
+    io.cilium/app: operator
+    name: cilium-operator
+    app.kubernetes.io/part-of: cilium
+    app.kubernetes.io/name: cilium-operator
+spec:
+  clusterIP: None
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9963
+      protocol: TCP
+      targetPort: prometheus
+  selector:
+    io.cilium/app: operator
+    name: cilium-operator

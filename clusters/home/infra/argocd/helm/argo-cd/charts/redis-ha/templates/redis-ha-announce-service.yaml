@@ -1,0 +1,87 @@
+---
+# Source: argo-cd/charts/redis-ha/templates/redis-ha-announce-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-redis-ha-announce-0
+  namespace: "infra-argocd"
+  labels:
+    app: redis-ha
+    heritage: "Helm"
+    release: "argocd"
+    chart: redis-ha-4.34.11
+  annotations:
+spec:
+  publishNotReadyAddresses: true
+  type: ClusterIP
+  ports:
+    - name: tcp-server
+      port: 6379
+      protocol: TCP
+      targetPort: redis
+    - name: tcp-sentinel
+      port: 26379
+      protocol: TCP
+      targetPort: sentinel
+  selector:
+    release: argocd
+    app: redis-ha
+    "statefulset.kubernetes.io/pod-name": argocd-redis-ha-server-0
+---
+# Source: argo-cd/charts/redis-ha/templates/redis-ha-announce-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-redis-ha-announce-1
+  namespace: "infra-argocd"
+  labels:
+    app: redis-ha
+    heritage: "Helm"
+    release: "argocd"
+    chart: redis-ha-4.34.11
+  annotations:
+spec:
+  publishNotReadyAddresses: true
+  type: ClusterIP
+  ports:
+    - name: tcp-server
+      port: 6379
+      protocol: TCP
+      targetPort: redis
+    - name: tcp-sentinel
+      port: 26379
+      protocol: TCP
+      targetPort: sentinel
+  selector:
+    release: argocd
+    app: redis-ha
+    "statefulset.kubernetes.io/pod-name": argocd-redis-ha-server-1
+---
+# Source: argo-cd/charts/redis-ha/templates/redis-ha-announce-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-redis-ha-announce-2
+  namespace: "infra-argocd"
+  labels:
+    app: redis-ha
+    heritage: "Helm"
+    release: "argocd"
+    chart: redis-ha-4.34.11
+  annotations:
+spec:
+  publishNotReadyAddresses: true
+  type: ClusterIP
+  ports:
+    - name: tcp-server
+      port: 6379
+      protocol: TCP
+      targetPort: redis
+    - name: tcp-sentinel
+      port: 26379
+      protocol: TCP
+      targetPort: sentinel
+  selector:
+    release: argocd
+    app: redis-ha
+    "statefulset.kubernetes.io/pod-name": argocd-redis-ha-server-2

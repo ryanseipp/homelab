@@ -1,0 +1,138 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - chart: grafana/grafana
+    name: grafana
+    version: 10.1.4
+    namespace: o11y-grafana
+    values:
+      - replicas: 1
+
+        # Admin credentials
+        adminUser: admin
+        adminPassword: "HomelabGrafana2025!"
+
+        # Persistence for dashboards and plugins
+        persistence:
+          enabled: true
+          storageClassName: ceph-block
+          size: 10Gi
+          accessModes:
+            - ReadWriteOnce
+
+        # Resource limits - homelab micro sizing
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+
+        # Service configuration
+        service:
+          type: ClusterIP
+          port: 80
+
+        # Enable ServiceMonitor for self-monitoring
+        serviceMonitor:
+          enabled: true
+          interval: 30s
+          path: /metrics
+
+        # Sidecar configuration for auto-discovering datasources and dashboards
+        sidecar:
+          # Datasource sidecar - watches for ConfigMaps with label grafana_datasource: "1"
+          datasources:
+            enabled: true
+            label: grafana_datasource
+            labelValue: "1"
+            searchNamespace: ALL
+            watchMethod: WATCH
+            resource: both # Watch both ConfigMaps and Secrets
+            reloadURL: "http://localhost:3000/api/admin/provisioning/datasources/reload"
+            skipReload: false
+
+          # Dashboard sidecar - watches for ConfigMaps with label grafana_dashboard: "1"
+          dashboards:
+            enabled: true
+            label: grafana_dashboard
+            labelValue: "1"
+            searchNamespace: ALL
+            folder: /tmp/dashboards
+            folderAnnotation: grafana_folder
+            provider:
+              name: sidecarProvider
+              orgId: 1
+              folder: ""
+              type: file
+              disableDelete: false
+              allowUiUpdates: false # Prevent UI edits (GitOps only)
+              foldersFromFilesStructure: true
+            watchMethod: WATCH
+            resource: configmap
+
+        # Grafana configuration
+        grafana.ini:
+          server:
+            root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
+            serve_from_sub_path: false
+
+          # Disable anonymous access
+          auth.anonymous:
+            enabled: false
+
+          # Disable analytics and update checks
+          analytics:
+            reporting_enabled: false
+            check_for_updates: false
+            check_for_plugin_updates: false
+
+          # User settings
+          users:
+            auto_assign_org: true
+            auto_assign_org_role: Viewer
+
+          # Security
+          security:
+            disable_initial_admin_creation: false
+            admin_user: admin
+
+          # Logging
+          log:
+            mode: console
+            level: info
+
+          # Feature toggles
+          feature_toggles:
+            enable:
+              "tempoSearch tempoServiceGraph tempoApmTable traceqlEditor
+              correlations metricsSummary traceToMetrics"
+
+        # Plugin installation
+        plugins: []
+
+        # Environment variables
+        env: {}
+
+        # Dashboard providers (managed by sidecar)
+        dashboardProviders: {}
+
+        # Datasources (managed by sidecar, but we can define static ones here if needed)
+        datasources: {}
+
+        # Disable embedded datasources - we'll use sidecar discovery
+        datasourceConfigmaps: []
+
+        # Grafana image
+        image:
+          repository: grafana/grafana
+          pullPolicy: IfNotPresent
+
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 472
+          runAsGroup: 472
+          fsGroup: 472

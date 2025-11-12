@@ -1,0 +1,12 @@
+repositories:
+  - name: tailscale
+    url: https://pkgs.tailscale.com/helmcharts
+
+releases:
+  - chart: tailscale/tailscale-operator
+    name: tailscale
+    version: 1.90.6
+    namespace: infra-vpn
+    values:
+      - apiServerProxyConfig:
+          mode: "true"

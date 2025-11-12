@@ -1,0 +1,32 @@
+---
+# Source: cilium/templates/cilium-agent/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cilium-agent
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: cilium
+    app.kubernetes.io/name: cilium-agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cilium-agent
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  endpoints:
+    - port: metrics
+      interval: "10s"
+      honorLabels: true
+      path: /metrics
+      relabelings:
+        - action: replace
+          replacement: ${1}
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: node
+  # If envoy DaemonSet is enabled, we'll create a separate service for it
+  # If it is not enabled, that means envoy runs inside cilium-agent and we'll monitor using same service
+  targetLabels:
+    - k8s-app

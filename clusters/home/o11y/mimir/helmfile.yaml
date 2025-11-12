@@ -1,0 +1,214 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - chart: grafana/mimir-distributed
+    name: mimir
+    version: 6.0.3
+    namespace: o11y-metrics
+    values:
+      - minio:
+          enabled: false
+        kafka:
+          enabled: false
+
+        rollout_operator:
+          enabled: false
+
+        # Enable ServiceMonitor for Prometheus scraping and Grafana dashboards
+        metaMonitoring:
+          serviceMonitor:
+            enabled: true
+          dashboards:
+            enabled: true
+            labels:
+              grafana_dashboard: "1"
+            annotations:
+              grafana_folder: "Mimir"
+
+        mimir:
+          structuredConfig:
+            # Single-tenant mode
+            multitenancy_enabled: false
+
+            common:
+              storage:
+                backend: s3
+                s3:
+                  endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+                  insecure: true
+                  access_key_id: ${AWS_ACCESS_KEY_ID}
+                  secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+            blocks_storage:
+              s3:
+                bucket_name: ${MIMIR_BUCKET}
+              storage_prefix: blocks
+
+            alertmanager_storage:
+              s3:
+                bucket_name: ${MIMIR_BUCKET}
+              storage_prefix: alertmanager
+
+            ruler_storage:
+              s3:
+                bucket_name: ${MIMIR_BUCKET}
+              storage_prefix: ruler
+
+            ingest_storage:
+              enabled: true
+              kafka:
+                address: kafka-kafka-bootstrap.infra-kafka.svc.cluster.local:9092
+                topic: mimir-ingest
+                auto_create_topic_enabled: false
+
+            # Micro sizing for ~50k series homelab
+            limits:
+              max_global_series_per_user: 100000
+              max_global_exemplars_per_user: 100000
+              ingestion_rate: 50000
+              ingestion_burst_size: 100000
+              out_of_order_time_window: 1m
+              # keep_identifying_resource_attributes: true
+              promote_otel_resource_attributes: "service.instance.id,service.name,service.namespace,service.version,cloud.availability_zone,cloud.region,container.name,deployment.environment,deployment.environment.name,k8s.cluster.name,k8s.container.name,k8s.cronjob.name,k8s.daemonset.name,k8s.deployment.name,k8s.job.name,k8s.namespace.name,k8s.pod.name,k8s.replicaset.name,k8s.statefulset.name"
+
+        # Micro sizing
+        ingester:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          persistentVolume:
+            enabled: false
+          zoneAwareReplication:
+            enabled: false
+          env:
+            - name: GOMEMLIMIT
+              value: "460MiB" # 90% of 512Mi container limit
+
+        distributor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+
+        querier:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+
+        query_frontend:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        query_scheduler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        store_gateway:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          persistentVolume:
+            enabled: false
+          zoneAwareReplication:
+            enabled: false
+
+        compactor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          persistentVolume:
+            enabled: false
+
+        ruler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        alertmanager:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          persistentVolume:
+            enabled: false
+
+        overrides_exporter:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        gateway:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        # Inject environment variables from auto-generated secrets
+        global:
+          # Enable environment variable expansion in config file
+          extraArgs:
+            - -config.expand-env=true
+          extraEnv:
+            # S3 credentials from ObjectBucketClaim 'mimir-data'
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mimir-data
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mimir-data
+                  key: AWS_SECRET_ACCESS_KEY
+
+            # S3 bucket name from ObjectBucketClaim ConfigMap
+            - name: MIMIR_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: mimir-data
+                  key: BUCKET_NAME

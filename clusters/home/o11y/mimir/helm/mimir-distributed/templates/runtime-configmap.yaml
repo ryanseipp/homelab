@@ -1,0 +1,17 @@
+---
+# Source: mimir-distributed/templates/runtime-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-runtime
+  labels:
+    helm.sh/chart: mimir-distributed-6.0.3
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/version: "3.0.0"
+    app.kubernetes.io/managed-by: Helm
+  namespace: "o11y-metrics"
+data:
+  runtime.yaml: |
+
+    {}

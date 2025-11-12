@@ -1,0 +1,107 @@
+---
+# Source: loki/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki
+  namespace: o11y-logs
+  labels:
+    helm.sh/chart: loki-6.46.0
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/version: "3.5.7"
+data:
+  config.yaml: |
+
+    auth_enabled: false
+    bloom_build:
+      builder:
+        planner_address: loki-bloom-planner-headless.o11y-logs.svc.cluster.local:9095
+      enabled: false
+    bloom_gateway:
+      client:
+        addresses: dnssrvnoa+_grpc._tcp.loki-bloom-gateway-headless.o11y-logs.svc.cluster.local
+      enabled: false
+    common:
+      compactor_grpc_address: 'loki-compactor.o11y-logs.svc.cluster.local:9095'
+      path_prefix: /var/loki
+      replication_factor: 1
+      storage:
+        s3:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          bucketnames: ${LOKI_BUCKET}
+          endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+          insecure: true
+          s3forcepathstyle: true
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    frontend:
+      scheduler_address: loki-query-scheduler.o11y-logs.svc.cluster.local:9095
+      tail_proxy_url: http://loki-querier.o11y-logs.svc.cluster.local:3100
+    frontend_worker:
+      scheduler_address: loki-query-scheduler.o11y-logs.svc.cluster.local:9095
+    index_gateway:
+      mode: simple
+    limits_config:
+      allow_structured_metadata: true
+      max_cache_freshness_per_query: 10m
+      max_query_lookback: 2160h
+      max_query_series: 10000
+      max_structured_metadata_entries_count: 128
+      max_structured_metadata_size: 64KB
+      query_timeout: 300s
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      retention_period: 2160h
+      split_queries_by_interval: 15m
+      volume_enabled: true
+    memberlist:
+      join_members:
+      - loki-memberlist.o11y-logs.svc.cluster.local
+    pattern_ingester:
+      enabled: false
+    query_range:
+      align_queries_with_step: true
+    ruler:
+      storage:
+        s3:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          bucketnames: ${LOKI_BUCKET}
+          endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+          insecure: true
+          s3forcepathstyle: true
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        type: s3
+      wal:
+        dir: /var/loki/ruler-wal
+    runtime_config:
+      file: /etc/loki/runtime-config/runtime-config.yaml
+    schema_config:
+      configs:
+      - from: "2024-01-01"
+        index:
+          period: 24h
+          prefix: loki_index_
+        object_store: s3
+        schema: v13
+        store: tsdb
+    server:
+      grpc_listen_port: 9095
+      http_listen_port: 3100
+      http_server_read_timeout: 600s
+      http_server_write_timeout: 600s
+    storage_config:
+      bloom_shipper:
+        working_directory: /var/loki/data/bloomshipper
+      boltdb_shipper:
+        index_gateway_client:
+          server_address: dns+loki-index-gateway-headless.o11y-logs.svc.cluster.local:9095
+      hedging:
+        at: 250ms
+        max_per_second: 20
+        up_to: 3
+      tsdb_shipper:
+        index_gateway_client:
+          server_address: dns+loki-index-gateway-headless.o11y-logs.svc.cluster.local:9095
+      use_thanos_objstore: false
+    tracing:
+      enabled: false

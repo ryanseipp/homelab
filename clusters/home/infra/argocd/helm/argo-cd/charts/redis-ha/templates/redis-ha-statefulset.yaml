@@ -1,0 +1,275 @@
+---
+# Source: argo-cd/charts/redis-ha/templates/redis-ha-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: argocd-redis-ha-server
+  namespace: "infra-argocd"
+  labels:
+    argocd-redis-ha: replica
+    app: redis-ha
+    heritage: "Helm"
+    release: "argocd"
+    chart: redis-ha-4.34.11
+  annotations: {}
+spec:
+  selector:
+    matchLabels:
+      release: argocd
+      app: redis-ha
+  serviceName: argocd-redis-ha
+  replicas: 3
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/init-config: 1f2490bcdf9edec5b7e7154644585898508cd93c242f0b4486f3504d231538c2
+      labels:
+        release: argocd
+        app: redis-ha
+        argocd-redis-ha: replica
+    spec:
+      terminationGracePeriodSeconds: 60
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: redis-ha
+                  release: argocd
+                  argocd-redis-ha: replica
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: argocd-redis-ha
+      automountServiceAccountToken: false
+      initContainers:
+        - name: config-init
+          image: ecr-public.aws.com/docker/library/redis:8.2.2-alpine
+          imagePullPolicy: IfNotPresent
+          resources: {}
+          command:
+            - sh
+          args:
+            - /readonly-config/init.sh
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: SENTINEL_ID_0
+              value: 3c0d9c0320bb34888c2df5757c718ce6ca992ce6
+            - name: SENTINEL_ID_1
+              value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
+            - name: SENTINEL_ID_2
+              value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-redis
+                  key: auth
+          volumeMounts:
+            - name: config
+              mountPath: /readonly-config
+              readOnly: true
+            - name: data
+              mountPath: /data
+
+      containers:
+        - name: redis
+          image: ecr-public.aws.com/docker/library/redis:8.2.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+          args:
+            - /data/conf/redis.conf
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-redis
+                  key: auth
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/redis_liveness.sh
+          readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/redis_readiness.sh
+          startupProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/redis_readiness.sh
+          resources: {}
+          ports:
+            - name: redis
+              containerPort: 6379
+          volumeMounts:
+            - name: config
+              mountPath: /readonly-config
+              readOnly: true
+            - mountPath: /data
+              name: data
+            - mountPath: /health
+              name: health
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - /readonly-config/trigger-failover-if-master.sh
+        - name: sentinel
+          image: ecr-public.aws.com/docker/library/redis:8.2.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-sentinel
+          args:
+            - /data/conf/sentinel.conf
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-redis
+                  key: auth
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/sentinel_liveness.sh
+          readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 3
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/sentinel_liveness.sh
+          startupProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/sentinel_liveness.sh
+          resources: {}
+          ports:
+            - name: sentinel
+              containerPort: 26379
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /health
+              name: health
+          lifecycle: {}
+
+        - name: split-brain-fix
+          image: ecr-public.aws.com/docker/library/redis:8.2.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+          args:
+            - /readonly-config/fix-split-brain.sh
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: SENTINEL_ID_0
+              value: 3c0d9c0320bb34888c2df5757c718ce6ca992ce6
+            - name: SENTINEL_ID_1
+              value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
+            - name: SENTINEL_ID_2
+              value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: argocd-redis
+                  key: auth
+          resources: {}
+          volumeMounts:
+            - name: config
+              mountPath: /readonly-config
+              readOnly: true
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: config
+          configMap:
+            name: argocd-redis-ha-configmap
+        - name: health
+          configMap:
+            name: argocd-redis-ha-health-configmap
+            defaultMode: 0755
+        - name: data
+          emptyDir: {}

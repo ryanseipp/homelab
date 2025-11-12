@@ -1,0 +1,20 @@
+---
+# Official Strimzi PodMonitor for entity operator (Topic Operator and User Operator)
+# Source: https://github.com/strimzi/strimzi-kafka-operator/blob/main/examples/metrics/prometheus-install/pod-monitors/entity-operator-metrics.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: entity-operator-metrics
+  namespace: infra-kafka
+  labels:
+    app: strimzi
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: entity-operator
+  namespaceSelector:
+    matchNames:
+      - infra-kafka
+  podMetricsEndpoints:
+    - path: /metrics
+      port: healthcheck

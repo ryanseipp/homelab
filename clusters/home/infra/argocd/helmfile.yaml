@@ -1,0 +1,55 @@
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+releases:
+  - chart: argo/argo-cd
+    name: argocd
+    version: 9.1.1
+    namespace: infra-argocd
+    values:
+      - redis-ha:
+          enabled: true
+        controller:
+          replicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              interval: 30s
+        server:
+          ingress:
+            enabled: true
+            tls: false
+            ingressClassName: tailscale
+            hostname: argocd
+            extraTls:
+              - hosts:
+                  - argocd
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              interval: 30s
+        configs:
+          params:
+            server.insecure: true
+        repoServer:
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              interval: 30s
+        applicationSet:
+          replicas: 2
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              interval: 30s

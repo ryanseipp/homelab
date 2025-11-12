@@ -1,0 +1,275 @@
+repositories:
+  - name: rook-release
+    url: https://charts.rook.io/release
+
+releases:
+  - chart: rook-release/rook-ceph
+    name: rook-ceph
+    version: 1.18.6
+    namespace: infra-storage
+    values:
+      - monitoring:
+          enabled: true
+        csi:
+          serviceMonitor:
+            enabled: true
+
+          csiRBDProvisionerResource: |
+            - name : csi-provisioner
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-resizer
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-attacher
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-snapshotter
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-rbdplugin
+              resource:
+                requests:
+                  memory: 128Mi
+                limits:
+                  memory: 256Mi
+            - name : csi-omap-generator
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : liveness-prometheus
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+
+          # -- CEPH CSI RBD plugin resource requirement list
+          # @default -- see values.yaml
+          csiRBDPluginResource: |
+            - name : driver-registrar
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : csi-rbdplugin
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : liveness-prometheus
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+
+          # -- CEPH CSI CephFS provisioner resource requirement list
+          # @default -- see values.yaml
+          csiCephFSProvisionerResource: |
+            - name : csi-provisioner
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-resizer
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-attacher
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-snapshotter
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 100m
+                limits:
+                  memory: 256Mi
+            - name : csi-cephfsplugin
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : liveness-prometheus
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+
+          # -- CEPH CSI CephFS plugin resource requirement list
+          # @default -- see values.yaml
+          csiCephFSPluginResource: |
+            - name : driver-registrar
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : csi-cephfsplugin
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+            - name : liveness-prometheus
+              resource:
+                requests:
+                  memory: 128Mi
+                  cpu: 50m
+                limits:
+                  memory: 256Mi
+
+  - chart: rook-release/rook-ceph-cluster
+    name: rook-ceph-cluster
+    version: 1.18.6
+    namespace: infra-storage
+    values:
+      - operatorNamespace: infra-storage
+        monitoring:
+          enabled: true
+          createPrometheusRules: false
+        cephClusterSpec:
+          mon:
+            allowMultiplePerNode: true
+          mgr:
+            allowMultiplePerNode: true
+          resources:
+            mon:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+            mgr:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+            osd:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+            mds:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+        cephBlockPools:
+          - name: ceph-blockpool
+            spec:
+              failureDomain: host
+              replicated:
+                size: 2
+            storageClass:
+              enabled: true
+              name: ceph-block
+              isDefault: true
+              reclaimPolicy: Delete
+              allowVolumeExpansion: true
+              volumeBindingMode: Immediate
+              parameters:
+                imageFormat: "2"
+                imageFeatures: layering
+                csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/provisioner-secret-namespace: infra-storage
+                csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+                csi.storage.k8s.io/controller-expand-secret-namespace: infra-storage
+                csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+                csi.storage.k8s.io/node-stage-secret-namespace: infra-storage
+                csi.storage.k8s.io/fstype: ext4
+        cephFileSystems:
+          - name: ceph-filesystem
+            spec:
+              metadataPool:
+                replicated:
+                  size: 2
+              dataPools:
+                - name: data0
+                  failureDomain: host
+                  replicated:
+                    size: 2
+              metadataServer:
+                activeCount: 1
+                activeStandby: true
+            storageClass:
+              enabled: true
+              name: ceph-filesystem
+              reclaimPolicy: Delete
+              allowVolumeExpansion: true
+              volumeBindingMode: Immediate
+              parameters:
+                csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+                csi.storage.k8s.io/provisioner-secret-namespace: infra-storage
+                csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+                csi.storage.k8s.io/controller-expand-secret-namespace: infra-storage
+                csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+                csi.storage.k8s.io/node-stage-secret-namespace: infra-storage
+                csi.storage.k8s.io/fstype: ext4
+        cephObjectStores:
+          - name: ceph-objectstore
+            spec:
+              metadataPool:
+                replicated:
+                  size: 1
+                  requireSafeReplicaSize: false
+                failureDomain: osd
+              dataPool:
+                replicated:
+                  size: 1
+                  requireSafeReplicaSize: false
+                failureDomain: osd
+              preservePoolsOnDelete: true
+              gateway:
+                instances: 1
+                port: 80
+                priorityClassName: system-cluster-critical
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 256Mi
+            storageClass:
+              enabled: true
+              name: ceph-bucket
+              reclaimPolicy: Delete
+              volumeBindingMode: Immediate
+              parameters:
+                region: us-east-1
+        toolbox:
+          enabled: true

@@ -88,21 +88,42 @@
         perSystem =
           { pkgs, system, ... }:
           {
+            treefmt = {
+              projectRootFile = "flake.nix";
+              settings.global.excludes = [
+                ".envrc"
+                "LICENSE"
+                "*.pub"
+              ];
+
+              programs = {
+                nixfmt.enable = true;
+
+                prettier = {
+                  enable = true;
+                  settings.proseWrap = "always";
+                };
+              };
+            };
+
             devShells.default = pkgs.mkShell {
               packages =
                 (with pkgs; [
                   argocd
                   cilium-cli
                   dig
-                  ethtool
-                  iputils
+                  helmfile
+                  k9s
                   kubernetes-helm
                   kubectl
-                  kubernetes
+                  kubectl-rook-ceph
+                  krew
+                  kubectx
+                  kustomize
                   k9s
                   nixos-anywhere
-                  sbctl
-                  traceroute
+                  talosctl
+                  yq-go
                 ])
                 ++ [ pkgs.deploy-rs ];
             };

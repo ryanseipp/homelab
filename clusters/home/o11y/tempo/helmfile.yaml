@@ -1,0 +1,85 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - chart: grafana/tempo-distributed
+    name: tempo
+    version: 1.53.2
+    namespace: o11y-traces
+    values:
+      - # Disable embedded MinIO for production
+        minio:
+          enabled: false
+
+        # Enable ServiceMonitor for Prometheus scraping
+        metaMonitoring:
+          serviceMonitor:
+            enabled: true
+
+        # Metrics Generator - generates RED metrics from traces with exemplars
+        metricsGenerator:
+          enabled: true
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          config:
+            storage:
+              path: /var/tempo/wal
+              remote_write:
+                - url: http://mimir-gateway.o11y-metrics.svc.cluster.local/api/v1/push
+                  send_exemplars: true
+            processor:
+              service_graphs:
+                max_items: 10000
+                wait: 10s
+              span_metrics:
+                enable_target_info: true
+                dimensions:
+                  - http.method
+                  - http.status_code
+                  - service.version
+
+        # Storage configuration
+        storage:
+          trace:
+            backend: s3
+            s3:
+              bucket: ${TEMPO_BUCKET}
+              endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+              insecure: true
+              access_key: ${AWS_ACCESS_KEY_ID}
+              secret_key: ${AWS_SECRET_ACCESS_KEY}
+
+        # Disable memcached - causes issues with global extraArgs
+        memcached:
+          enabled: false
+
+        # Inject environment variables from auto-generated secrets
+        global:
+          # Enable environment variable expansion in config file
+          extraArgs:
+            - -config.expand-env=true
+          extraEnv:
+            # S3 credentials from ObjectBucketClaim 'tempo-traces'
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-traces
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tempo-traces
+                  key: AWS_SECRET_ACCESS_KEY
+
+            # S3 bucket name from ObjectBucketClaim ConfigMap
+            - name: TEMPO_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: tempo-traces
+                  key: BUCKET_NAME

@@ -1,0 +1,90 @@
+repositories:
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+releases:
+  - chart: prometheus-community/kube-state-metrics
+    name: kube-state-metrics
+    version: 5.27.0
+    namespace: o11y-kube-state-metrics
+    values:
+      # Single replica is sufficient for homelab
+      - replicas: 1
+
+        # Resource limits - homelab micro sizing
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+
+        # Service configuration
+        service:
+          type: ClusterIP
+          port: 8080
+
+        # ServiceMonitor for Prometheus Operator (if used)
+        prometheus:
+          monitor:
+            enabled: true
+            interval: 30s
+
+        # Security context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+          fsGroup: 65534
+
+        # Collectors - enable all by default
+        collectors:
+          - certificatesigningrequests
+          - configmaps
+          - cronjobs
+          - daemonsets
+          - deployments
+          - endpoints
+          - horizontalpodautoscalers
+          - ingresses
+          - jobs
+          - leases
+          - limitranges
+          - mutatingwebhookconfigurations
+          - namespaces
+          - networkpolicies
+          - nodes
+          - persistentvolumeclaims
+          - persistentvolumes
+          - poddisruptionbudgets
+          - pods
+          - replicasets
+          - replicationcontrollers
+          - resourcequotas
+          - secrets
+          - services
+          - statefulsets
+          - storageclasses
+          - validatingwebhookconfigurations
+          - volumeattachments
+
+        # RBAC - required for reading Kubernetes API
+        rbac:
+          create: true
+
+        # ServiceAccount
+        serviceAccount:
+          create: true
+          name: kube-state-metrics
+
+        # Update strategy
+        updateStrategy: RollingUpdate
+
+        # Node selector
+        nodeSelector: {}
+
+        # Tolerations
+        tolerations: []
+
+        # Affinity
+        affinity: {}

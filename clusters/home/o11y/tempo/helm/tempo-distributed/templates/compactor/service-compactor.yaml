@@ -1,0 +1,27 @@
+---
+# Source: tempo-distributed/templates/compactor/service-compactor.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-compactor
+  namespace: o11y-traces
+  labels:
+    helm.sh/chart: tempo-distributed-1.53.2
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: compactor
+    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-metrics
+      port: 3200
+      targetPort: http-metrics
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: compactor
+  ipFamilies: [IPv4]
+  ipFamilyPolicy: SingleStack

@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: infra-tls
+resources:
+  - namespace.yaml
+  - cluster-issuer.yaml
+  - helm/cert-manager/templates/cainjector-deployment.yaml
+  - helm/cert-manager/templates/cainjector-rbac.yaml
+  - helm/cert-manager/templates/cainjector-service.yaml
+  - helm/cert-manager/templates/cainjector-serviceaccount.yaml
+  - helm/cert-manager/templates/controller-config.yaml
+  - helm/cert-manager/templates/crds.yaml
+  - helm/cert-manager/templates/deployment.yaml
+  - helm/cert-manager/templates/rbac.yaml
+  - helm/cert-manager/templates/service.yaml
+  - helm/cert-manager/templates/serviceaccount.yaml
+  - helm/cert-manager/templates/servicemonitor.yaml
+  - helm/cert-manager/templates/startupapicheck-job.yaml
+  - helm/cert-manager/templates/startupapicheck-rbac.yaml
+  - helm/cert-manager/templates/startupapicheck-serviceaccount.yaml
+  - helm/cert-manager/templates/webhook-deployment.yaml
+  - helm/cert-manager/templates/webhook-mutating-webhook.yaml
+  - helm/cert-manager/templates/webhook-rbac.yaml
+  - helm/cert-manager/templates/webhook-service.yaml
+  - helm/cert-manager/templates/webhook-serviceaccount.yaml
+  - helm/cert-manager/templates/webhook-validating-webhook.yaml
+images:
+  - digest: sha256:1075e097415167caa584b203292dfb57e46866df0adb76fe769ef5cb0297ccc4
+    name: quay.io/jetstack/cert-manager-startupapicheck:v1.18.2
+  - digest: sha256:af59e01ad9756a1034fbf948330e75702e5d79b3577f323f6a9947707ba262fc
+    name: quay.io/jetstack/cert-manager-cainjector:v1.18.2
+  - digest: sha256:81316365dc0b713eddddfbf9b8907b2939676e6c0e12beec0f9625f202a36d16
+    name: quay.io/jetstack/cert-manager-controller:v1.18.2
+  - digest: sha256:9431f0d8b5103b06cc6138564f471ac02c6b2638c2fa399d81e28a01d817ae73
+    name: quay.io/jetstack/cert-manager-webhook:v1.18.2

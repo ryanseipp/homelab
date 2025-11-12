@@ -1,0 +1,36 @@
+---
+# Source: argo-cd/charts/redis-ha/templates/tests/test-redis-ha-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: argocd-redis-ha-service-test
+  namespace: "infra-argocd"
+  labels:
+    app: redis-ha
+    heritage: "Helm"
+    release: "argocd"
+    chart: redis-ha-4.34.11
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  nodeSelector: {}
+  tolerations: []
+  containers:
+    - name: "argocd-service-test"
+      image: ecr-public.aws.com/docker/library/redis:8.2.2-alpine
+      command:
+        - sh
+        - -c
+        - redis-cli -h argocd-redis-ha-haproxy -p 6379 info server
+      resources: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+  restartPolicy: Never

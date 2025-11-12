@@ -1,0 +1,42 @@
+---
+# Source: grafana/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana
+  namespace: o11y-grafana
+  labels:
+    helm.sh/chart: grafana-10.1.4
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: grafana
+    app.kubernetes.io/version: "12.2.1"
+data:
+  grafana.ini: |
+    [analytics]
+    check_for_plugin_updates = false
+    check_for_updates = false
+    reporting_enabled = false
+    [auth.anonymous]
+    enabled = false
+    [feature_toggles]
+    enable = tempoSearch tempoServiceGraph tempoApmTable traceqlEditor correlations metricsSummary traceToMetrics
+    [grafana_net]
+    url = https://grafana.net
+    [log]
+    level = info
+    mode = console
+    [paths]
+    data = /var/lib/grafana/
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+    [security]
+    admin_user = admin
+    disable_initial_admin_creation = false
+    [server]
+    domain = ''
+    root_url = %(protocol)s://%(domain)s:%(http_port)s/
+    serve_from_sub_path = false
+    [users]
+    auto_assign_org = true
+    auto_assign_org_role = Viewer

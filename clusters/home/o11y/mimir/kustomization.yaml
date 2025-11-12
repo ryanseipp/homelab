@@ -1,0 +1,69 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: o11y-metrics
+# S3 Storage via Rook Ceph ObjectBucketClaims (auto-generates secrets & configmaps)
+# Kafka Topic and User (managed by Strimzi, auto-generates secrets)
+# Mimir Helm Chart Templates (environment variables injected via helmfile extraEnv)
+# - kafka-user.yaml
+resources:
+  - namespace.yaml
+  - object-storage.yaml
+  - grafana-datasource.yaml
+  - kafka-topic.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-config.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-pdb.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-servmon.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-statefulset.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-svc-headless.yaml
+  - helm/mimir-distributed/templates/alertmanager/alertmanager-svc.yaml
+  - helm/mimir-distributed/templates/compactor/compactor-pdb.yaml
+  - helm/mimir-distributed/templates/compactor/compactor-servmon.yaml
+  - helm/mimir-distributed/templates/compactor/compactor-statefulset.yaml
+  - helm/mimir-distributed/templates/compactor/compactor-svc.yaml
+  - helm/mimir-distributed/templates/distributor/distributor-dep.yaml
+  - helm/mimir-distributed/templates/distributor/distributor-pdb.yaml
+  - helm/mimir-distributed/templates/distributor/distributor-servmon.yaml
+  - helm/mimir-distributed/templates/distributor/distributor-svc-headless.yaml
+  - helm/mimir-distributed/templates/distributor/distributor-svc.yaml
+  - helm/mimir-distributed/templates/gateway/gateway-dep.yaml
+  - helm/mimir-distributed/templates/gateway/gateway-pdb.yaml
+  - helm/mimir-distributed/templates/gateway/gateway-servmon.yaml
+  - helm/mimir-distributed/templates/gateway/gateway-svc.yaml
+  - helm/mimir-distributed/templates/gateway/nginx-configmap.yaml
+  - helm/mimir-distributed/templates/gossip-ring/gossip-ring-svc.yaml
+  - helm/mimir-distributed/templates/ingester/ingester-pdb.yaml
+  - helm/mimir-distributed/templates/ingester/ingester-servmon.yaml
+  - helm/mimir-distributed/templates/ingester/ingester-statefulset.yaml
+  - helm/mimir-distributed/templates/ingester/ingester-svc-headless.yaml
+  - helm/mimir-distributed/templates/ingester/ingester-svc.yaml
+  - helm/mimir-distributed/templates/metamonitoring/grafana-dashboards.yaml
+  - helm/mimir-distributed/templates/mimir-config.yaml
+  - helm/mimir-distributed/templates/overrides-exporter/overrides-exporter-dep.yaml
+  - helm/mimir-distributed/templates/overrides-exporter/overrides-exporter-pdb.yaml
+  - helm/mimir-distributed/templates/overrides-exporter/overrides-exporter-servmon.yaml
+  - helm/mimir-distributed/templates/overrides-exporter/overrides-exporter-svc.yaml
+  - helm/mimir-distributed/templates/querier/querier-dep.yaml
+  - helm/mimir-distributed/templates/querier/querier-pdb.yaml
+  - helm/mimir-distributed/templates/querier/querier-servmon.yaml
+  - helm/mimir-distributed/templates/querier/querier-svc.yaml
+  - helm/mimir-distributed/templates/query-frontend/query-frontend-dep.yaml
+  - helm/mimir-distributed/templates/query-frontend/query-frontend-pdb.yaml
+  - helm/mimir-distributed/templates/query-frontend/query-frontend-servmon.yaml
+  - helm/mimir-distributed/templates/query-frontend/query-frontend-svc.yaml
+  - helm/mimir-distributed/templates/query-scheduler/query-scheduler-dep.yaml
+  - helm/mimir-distributed/templates/query-scheduler/query-scheduler-pdb.yaml
+  - helm/mimir-distributed/templates/query-scheduler/query-scheduler-servmon.yaml
+  - helm/mimir-distributed/templates/query-scheduler/query-scheduler-svc-headless.yaml
+  - helm/mimir-distributed/templates/query-scheduler/query-scheduler-svc.yaml
+  - helm/mimir-distributed/templates/ruler/ruler-dep.yaml
+  - helm/mimir-distributed/templates/ruler/ruler-pdb.yaml
+  - helm/mimir-distributed/templates/ruler/ruler-servmon.yaml
+  - helm/mimir-distributed/templates/ruler/ruler-svc.yaml
+  - helm/mimir-distributed/templates/runtime-configmap.yaml
+  - helm/mimir-distributed/templates/serviceaccount.yaml
+  - helm/mimir-distributed/templates/smoke-test/smoke-test-job.yaml
+  - helm/mimir-distributed/templates/store-gateway/store-gateway-pdb.yaml
+  - helm/mimir-distributed/templates/store-gateway/store-gateway-servmon.yaml
+  - helm/mimir-distributed/templates/store-gateway/store-gateway-statefulset.yaml
+  - helm/mimir-distributed/templates/store-gateway/store-gateway-svc-headless.yaml
+  - helm/mimir-distributed/templates/store-gateway/store-gateway-svc.yaml

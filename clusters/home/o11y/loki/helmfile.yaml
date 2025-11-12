@@ -1,0 +1,198 @@
+repositories:
+  - name: grafana
+    url: https://grafana.github.io/helm-charts
+
+releases:
+  - chart: grafana/loki
+    name: loki
+    version: 6.46.0
+    namespace: o11y-logs
+    values:
+      - deploymentMode: Distributed
+
+        # Enable ServiceMonitor for Prometheus scraping
+        serviceMonitor:
+          enabled: true
+          interval: 15s
+
+        # Enable Grafana dashboards
+        monitoring:
+          dashboards:
+            enabled: true
+            labels:
+              grafana_dashboard: "1"
+            annotations:
+              grafana_folder: "Loki"
+
+        # Disable embedded MinIO
+        minio:
+          enabled: false
+
+        # Disable SimpleScalable components (required when using Distributed mode)
+        write:
+          replicas: 0
+        read:
+          replicas: 0
+        backend:
+          replicas: 0
+
+        loki:
+          # Disable multi-tenancy (no need for X-Scope-OrgID header)
+          auth_enabled: false
+
+          # Storage configuration using single S3 bucket
+          storage:
+            type: s3
+            bucketNames:
+              chunks: ${LOKI_BUCKET}
+              ruler: ${LOKI_BUCKET}
+              admin: ${LOKI_BUCKET}
+            s3:
+              endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+              insecure: true
+              s3ForcePathStyle: true
+              accessKeyId: ${AWS_ACCESS_KEY_ID}
+              secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+          # Schema configuration
+          schemaConfig:
+            configs:
+              - from: "2024-01-01"
+                store: tsdb
+                object_store: s3
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+
+          # Limits and retention
+          limits_config:
+            retention_period: 2160h # 90 days
+            max_query_series: 10000
+            max_query_lookback: 2160h
+            allow_structured_metadata: true
+            max_structured_metadata_size: 64KB
+            max_structured_metadata_entries_count: 128
+
+          # Common config
+          commonConfig:
+            replication_factor: 1
+
+        # Disable memory-intensive caches for homelab
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+
+        # Component sizing - homelab micro sizing
+        distributor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        ingester:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          persistence:
+            enabled: false
+          zoneAwareReplication:
+            enabled: false
+
+        querier:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        queryFrontend:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        queryScheduler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        compactor:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        indexGateway:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          persistence:
+            enabled: false
+
+        ruler:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        gateway:
+          replicas: 1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+
+        # Inject environment variables from auto-generated secrets
+        global:
+          # Enable environment variable expansion in config file
+          extraArgs:
+            - -config.expand-env=true
+          extraEnv:
+            # S3 credentials from ObjectBucketClaim 'loki-data'
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: loki-data
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: loki-data
+                  key: AWS_SECRET_ACCESS_KEY
+
+            # S3 bucket name from ObjectBucketClaim ConfigMap
+            - name: LOKI_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: loki-data
+                  key: BUCKET_NAME

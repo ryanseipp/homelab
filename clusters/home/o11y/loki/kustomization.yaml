@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: o11y-logs
+resources:
+  - namespace.yaml
+  - object-storage.yaml
+  - grafana-datasource.yaml
+  - helm/loki/templates/backend/clusterrole.yaml
+  - helm/loki/templates/backend/clusterrolebinding.yaml
+  - helm/loki/templates/compactor/service-compactor.yaml
+  - helm/loki/templates/compactor/statefulset-compactor.yaml
+  - helm/loki/templates/config.yaml
+  - helm/loki/templates/distributor/deployment-distributor.yaml
+  - helm/loki/templates/distributor/service-distributor-headless.yaml
+  - helm/loki/templates/distributor/service-distributor.yaml
+  - helm/loki/templates/gateway/configmap-gateway.yaml
+  - helm/loki/templates/gateway/deployment-gateway-nginx.yaml
+  - helm/loki/templates/gateway/service-gateway.yaml
+  - helm/loki/templates/index-gateway/service-index-gateway-headless.yaml
+  - helm/loki/templates/index-gateway/service-index-gateway.yaml
+  - helm/loki/templates/index-gateway/statefulset-index-gateway.yaml
+  - helm/loki/templates/ingester/service-ingester-headless.yaml
+  - helm/loki/templates/ingester/service-ingester.yaml
+  - helm/loki/templates/ingester/statefulset-ingester.yaml
+  - helm/loki/templates/loki-canary/daemonset.yaml
+  - helm/loki/templates/loki-canary/service.yaml
+  - helm/loki/templates/loki-canary/serviceaccount.yaml
+  - helm/loki/templates/monitoring/dashboards/configmap-1.yaml
+  - helm/loki/templates/monitoring/dashboards/configmap-2.yaml
+  - helm/loki/templates/querier/deployment-querier.yaml
+  - helm/loki/templates/querier/service-querier.yaml
+  - helm/loki/templates/query-frontend/deployment-query-frontend.yaml
+  - helm/loki/templates/query-frontend/service-query-frontend-headless.yaml
+  - helm/loki/templates/query-frontend/service-query-frontend.yaml
+  - helm/loki/templates/query-scheduler/deployment-query-scheduler.yaml
+  - helm/loki/templates/query-scheduler/service-query-scheduler.yaml
+  - helm/loki/templates/ruler/service-ruler.yaml
+  - helm/loki/templates/ruler/statefulset-ruler.yaml
+  - helm/loki/templates/runtime-configmap.yaml
+  - helm/loki/templates/service-memberlist.yaml
+  - helm/loki/templates/serviceaccount.yaml
+  - helm/loki/templates/tests/test-canary.yaml

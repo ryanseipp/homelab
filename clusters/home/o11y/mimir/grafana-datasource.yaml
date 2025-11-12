@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-datasource
+  namespace: o11y-metrics
+  labels:
+    grafana_datasource: "1"
+data:
+  mimir-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: Mimir
+        type: prometheus
+        uid: mimir
+        access: proxy
+        url: http://mimir-gateway.o11y-metrics.svc.cluster.local:80/prometheus
+        isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: Mimir
+          timeInterval: 30s
+          incrementalQuerying: true
+          incrementalQueryOverlapWindow: 10m

@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: infra-vpn
+resources:
+  - ./namespace.yaml
+  - helm/tailscale-operator/templates/apiserverproxy-rbac.yaml
+  - helm/tailscale-operator/templates/connector.yaml
+  - helm/tailscale-operator/templates/deployment.yaml
+  - helm/tailscale-operator/templates/dnsconfig.yaml
+  - helm/tailscale-operator/templates/ingressclass.yaml
+  - helm/tailscale-operator/templates/oauth-secret.yaml
+  - helm/tailscale-operator/templates/operator-rbac.yaml
+  - helm/tailscale-operator/templates/proxy-rbac.yaml
+  - helm/tailscale-operator/templates/proxyclass.yaml
+  - helm/tailscale-operator/templates/proxygroup.yaml
+  - helm/tailscale-operator/templates/recorder.yaml
+# crane digest <image>:<tag>
+# Ensure all images created have immutable images, thanks to digests
+images:
+  - digest: sha256:cea460b5f3b6bb0a119c63e7a77dda65f0bbbd513cd8e21154851a3ba37d146f
+    name: tailscale/k8s-operator
+  - digest: sha256:241d9518b7e0b6e533dbd0117fcea15acb4174249210837f52b71615949ce9d2
+    name: tailscale/tailscale

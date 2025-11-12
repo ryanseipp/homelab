@@ -1,0 +1,29 @@
+---
+# Source: mimir-distributed/templates/gossip-ring/gossip-ring-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir-gossip-ring
+  labels:
+    helm.sh/chart: mimir-distributed-6.0.3
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/version: "3.0.0"
+    app.kubernetes.io/managed-by: Helm
+  namespace: "o11y-metrics"
+  annotations: {}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: gossip-ring
+      port: 7946
+      appProtocol: tcp
+      protocol: TCP
+      targetPort: 7946
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/part-of: memberlist

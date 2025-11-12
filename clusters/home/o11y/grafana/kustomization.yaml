@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: o11y-grafana
+resources:
+  - namespace.yaml
+  - ingress.yaml
+  - dashboards/argocd-dashboards.yaml
+  - dashboards/k8s-system-api-server.yaml
+  - dashboards/k8s-system-coredns.yaml
+  - dashboards/k8s-views-global.yaml
+  - dashboards/k8s-views-namespaces.yaml
+  - dashboards/k8s-views-nodes.yaml
+  - dashboards/k8s-views-pods.yaml
+  - helm/grafana/templates/clusterrole.yaml
+  - helm/grafana/templates/clusterrolebinding.yaml
+  - helm/grafana/templates/configmap-dashboard-provider.yaml
+  - helm/grafana/templates/configmap.yaml
+  - helm/grafana/templates/deployment.yaml
+  - helm/grafana/templates/pvc.yaml
+  - helm/grafana/templates/role.yaml
+  - helm/grafana/templates/rolebinding.yaml
+  - helm/grafana/templates/secret.yaml
+  - helm/grafana/templates/service.yaml
+  - helm/grafana/templates/serviceaccount.yaml
+  - helm/grafana/templates/servicemonitor.yaml
+  - helm/grafana/templates/tests/test-configmap.yaml
+  - helm/grafana/templates/tests/test-serviceaccount.yaml
+  - helm/grafana/templates/tests/test.yaml

@@ -1,0 +1,30 @@
+---
+# Source: tempo-distributed/templates/gossip-ring/service-gossip-ring.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-gossip-ring
+  namespace: o11y-traces
+  labels:
+    helm.sh/chart: tempo-distributed-1.53.2
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: gossip-ring
+    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ipFamilies: [IPv4]
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: gossip-ring
+      port: 7946
+      protocol: TCP
+      targetPort: 7946
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/part-of: memberlist

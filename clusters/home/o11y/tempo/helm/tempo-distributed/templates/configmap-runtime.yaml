@@ -1,0 +1,18 @@
+---
+# Source: tempo-distributed/templates/configmap-runtime.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-runtime
+  labels:
+    helm.sh/chart: tempo-distributed-1.53.2
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/managed-by: Helm
+  namespace: "o11y-traces"
+data:
+  overrides.yaml: |
+
+    overrides:
+      null

@@ -1,0 +1,26 @@
+---
+# Source: tempo-distributed/templates/distributor/service-distributor-discovery.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-distributor-discovery
+  namespace: o11y-traces
+  labels:
+    helm.sh/chart: tempo-distributed-1.53.2
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: distributor
+    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/managed-by: Helm
+    prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http-metrics
+      port: 3200
+      targetPort: http-metrics
+  selector:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: distributor

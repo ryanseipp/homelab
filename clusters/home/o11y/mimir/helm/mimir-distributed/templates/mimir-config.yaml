@@ -1,0 +1,129 @@
+---
+# Source: mimir-distributed/templates/mimir-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-config
+  labels:
+    helm.sh/chart: mimir-distributed-6.0.3
+    app.kubernetes.io/name: mimir
+    app.kubernetes.io/instance: mimir
+    app.kubernetes.io/version: "3.0.0"
+    app.kubernetes.io/managed-by: Helm
+  namespace: "o11y-metrics"
+data:
+  mimir.yaml: |
+
+    activity_tracker:
+      filepath: /active-query-tracker/activity.log
+    alertmanager:
+      data_dir: /data
+      enable_api: true
+      external_url: /alertmanager
+      fallback_config_file: /configs/alertmanager_fallback_config.yaml
+    alertmanager_storage:
+      s3:
+        bucket_name: ${MIMIR_BUCKET}
+      storage_prefix: alertmanager
+    blocks_storage:
+      backend: s3
+      bucket_store:
+        sync_dir: /data/tsdb-sync
+      s3:
+        bucket_name: ${MIMIR_BUCKET}
+      storage_prefix: blocks
+      tsdb:
+        dir: /data/tsdb
+        head_compaction_interval: 15m
+        wal_replay_concurrency: 3
+    common:
+      storage:
+        backend: s3
+        s3:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          endpoint: rook-ceph-rgw-ceph-objectstore.infra-storage.svc.cluster.local:80
+          insecure: true
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+    compactor:
+      compaction_interval: 30m
+      data_dir: /data
+      deletion_delay: 2h
+      first_level_compaction_wait_period: 25m
+      max_closing_blocks_concurrency: 2
+      max_opening_blocks_concurrency: 4
+      sharding_ring:
+        heartbeat_period: 1m
+        heartbeat_timeout: 4m
+        wait_stability_min_duration: 1m
+      symbols_flushers_concurrency: 4
+    distributor:
+      remote_timeout: 5s
+      ring:
+        heartbeat_period: 1m
+        heartbeat_timeout: 4m
+    frontend:
+      parallelize_shardable_queries: true
+      scheduler_address: mimir-query-scheduler-headless.o11y-metrics.svc:9095
+    frontend_worker:
+      grpc_client_config:
+        max_send_msg_size: 419430400
+      scheduler_address: mimir-query-scheduler-headless.o11y-metrics.svc:9095
+    ingest_storage:
+      enabled: true
+      kafka:
+        address: kafka-kafka-bootstrap.infra-kafka.svc.cluster.local:9092
+        auto_create_topic_default_partitions: 100
+        auto_create_topic_enabled: false
+        topic: mimir-ingest
+    ingester:
+      push_grpc_method_enabled: false
+      ring:
+        final_sleep: 0s
+        heartbeat_period: 2m
+        heartbeat_timeout: 10m
+        num_tokens: 512
+        tokens_file_path: /data/tokens
+        unregister_on_shutdown: false
+    ingester_client:
+      grpc_client_config:
+        max_recv_msg_size: 104857600
+        max_send_msg_size: 104857600
+    limits:
+      ingestion_burst_size: 100000
+      ingestion_rate: 50000
+      max_cache_freshness: 10m
+      max_global_exemplars_per_user: 100000
+      max_global_series_per_user: 100000
+      max_query_parallelism: 240
+      max_total_query_length: 12000h
+      out_of_order_time_window: 1m
+      promote_otel_resource_attributes: service.instance.id,service.name,service.namespace,service.version,cloud.availability_zone,cloud.region,container.name,deployment.environment,deployment.environment.name,k8s.cluster.name,k8s.container.name,k8s.cronjob.name,k8s.daemonset.name,k8s.deployment.name,k8s.job.name,k8s.namespace.name,k8s.pod.name,k8s.replicaset.name,k8s.statefulset.name
+    memberlist:
+      abort_if_cluster_join_fails: false
+      compression_enabled: false
+      join_members:
+      - dns+mimir-gossip-ring.o11y-metrics.svc.cluster.local.:7946
+    multitenancy_enabled: false
+    querier:
+      max_concurrent: 16
+    query_scheduler:
+      max_outstanding_requests_per_tenant: 800
+    ruler:
+      alertmanager_url: dnssrvnoa+http://_http-metrics._tcp.mimir-alertmanager-headless.o11y-metrics.svc.cluster.local./alertmanager
+      enable_api: true
+      rule_path: /data
+    ruler_storage:
+      s3:
+        bucket_name: ${MIMIR_BUCKET}
+      storage_prefix: ruler
+    runtime_config:
+      file: /var/mimir/runtime.yaml
+    store_gateway:
+      sharding_ring:
+        heartbeat_period: 1m
+        heartbeat_timeout: 10m
+        tokens_file_path: /data/tokens
+        unregister_on_shutdown: false
+        wait_stability_min_duration: 1m
+    usage_stats:
+      installation_mode: helm

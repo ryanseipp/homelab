@@ -1,0 +1,19 @@
+repositories:
+  - name: strimzi-cluster-operator
+    url: quay.io/strimzi-helm
+    oci: true
+
+releases:
+  - chart: strimzi-cluster-operator/strimzi-kafka-operator
+    name: strimzi-kafka-operator
+    version: 0.48.0
+    namespace: infra-kafka
+    values:
+      - watchAnyNamespace: true
+        # Enable Grafana dashboards
+        dashboards:
+          enabled: true
+          label: grafana_dashboard
+          labelValue: "1"
+          annotations:
+            grafana_folder: "Kafka"

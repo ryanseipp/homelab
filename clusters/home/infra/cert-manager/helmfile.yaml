@@ -1,0 +1,24 @@
+repositories:
+  - name: cert-manager
+    url: quay.io/jetstack/charts
+    oci: true
+
+releases:
+  - chart: cert-manager/cert-manager
+    name: cert-manager
+    version: v1.18.2
+    namespace: infra-tls
+    values:
+      - global:
+          leaderElection:
+            namespace: infra-tls
+        crds:
+          enabled: true
+        config:
+          apiVersion: controller.config.cert-manager.io/v1alpha1
+          kind: ControllerConfiguration
+          enableGatewayAPI: true
+        prometheus:
+          servicemonitor:
+            enabled: true
+            interval: 60s

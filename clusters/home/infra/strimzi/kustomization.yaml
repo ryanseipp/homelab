@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace:
+  infra-kafka
+  # - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.48.0/strimzi-crds-0.48.0.yaml
+  # Official Strimzi PodMonitors from https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/metrics/prometheus-install/pod-monitors
+resources:
+  - namespace.yaml
+  - kafka-metrics-configmap.yaml
+  - kafka-cluster.yaml
+  - kafka-podmonitor.yaml
+  - operator-podmonitor.yaml
+  - entity-operator-podmonitor.yaml
+  - helm/strimzi-kafka-operator/templates/010-ServiceAccount-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/020-ClusterRole-strimzi-cluster-operator-role.yaml
+  - helm/strimzi-kafka-operator/templates/020-RoleBinding-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/021-ClusterRole-strimzi-cluster-operator-role.yaml
+  - helm/strimzi-kafka-operator/templates/021-ClusterRoleBinding-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/022-ClusterRole-strimzi-cluster-operator-role.yaml
+  - helm/strimzi-kafka-operator/templates/022-RoleBinding-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/023-ClusterRole-strimzi-cluster-operator-role.yaml
+  - helm/strimzi-kafka-operator/templates/023-RoleBinding-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/030-ClusterRole-strimzi-kafka-broker.yaml
+  - helm/strimzi-kafka-operator/templates/030-ClusterRoleBinding-strimzi-cluster-operator-kafka-broker-delegation.yaml
+  - helm/strimzi-kafka-operator/templates/031-ClusterRole-strimzi-entity-operator.yaml
+  - helm/strimzi-kafka-operator/templates/031-RoleBinding-strimzi-cluster-operator-entity-operator-delegation.yaml
+  - helm/strimzi-kafka-operator/templates/033-ClusterRole-strimzi-kafka-client.yaml
+  - helm/strimzi-kafka-operator/templates/033-ClusterRoleBinding-strimzi-cluster-operator-kafka-client-delegation.yaml
+  - helm/strimzi-kafka-operator/templates/050-ConfigMap-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/060-Deployment-strimzi-cluster-operator.yaml
+  - helm/strimzi-kafka-operator/templates/090-ConfigMap-strimzi-grafana-dashboards.yaml

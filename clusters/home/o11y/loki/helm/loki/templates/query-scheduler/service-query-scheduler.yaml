@@ -1,0 +1,31 @@
+---
+# Source: loki/templates/query-scheduler/service-query-scheduler.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-query-scheduler
+  namespace: o11y-logs
+  labels:
+    helm.sh/chart: loki-6.46.0
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/version: "3.5.7"
+    app.kubernetes.io/component: query-scheduler
+  annotations:
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http-metrics
+      port: 3100
+      targetPort: http-metrics
+      protocol: TCP
+    - name: grpclb
+      port: 9095
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/component: query-scheduler

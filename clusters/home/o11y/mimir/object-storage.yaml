@@ -1,0 +1,9 @@
+---
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: mimir-data
+  namespace: o11y-metrics
+spec:
+  generateBucketName: mimir-data
+  storageClassName: ceph-bucket

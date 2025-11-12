@@ -1,0 +1,32 @@
+---
+# Source: tempo-distributed/templates/metrics-generator/service-metrics-generator-discovery.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo-metrics-generator-discovery
+  namespace: o11y-traces
+  labels:
+    helm.sh/chart: tempo-distributed-1.53.2
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: metrics-generator
+    app.kubernetes.io/part-of: memberlist
+    app.kubernetes.io/version: "2.9.0"
+    app.kubernetes.io/managed-by: Helm
+    prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: "grpc"
+      port: 9095
+      protocol: TCP
+      targetPort: 9095
+    - name: "http-metrics"
+      port: 3200
+      protocol: TCP
+      targetPort: 3200
+  selector:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/instance: tempo
+    app.kubernetes.io/component: metrics-generator

@@ -1,0 +1,29 @@
+---
+# Source: loki/templates/tests/test-canary.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "loki-helm-test"
+  namespace: o11y-logs
+  labels:
+    helm.sh/chart: loki-6.46.0
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/version: "3.5.7"
+    app.kubernetes.io/component: helm-test
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: loki-helm-test
+      image: docker.io/grafana/loki-helm-test:latest
+      env:
+        - name: CANARY_SERVICE_ADDRESS
+          value: "http://loki-canary.o11y-logs.svc.cluster.local:3500/metrics"
+        - name: CANARY_PROMETHEUS_ADDRESS
+          value: ""
+        - name: CANARY_TEST_TIMEOUT
+          value: "1m"
+      args:
+        - -test.v
+  restartPolicy: Never

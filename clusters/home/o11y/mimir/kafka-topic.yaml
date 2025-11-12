@@ -1,0 +1,23 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: mimir-ingest
+  namespace: infra-kafka
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 30
+  replicas: 1
+  config:
+    # Retention: 3 days (adjust based on your ingestion patterns)
+    retention.ms: 259200000
+    # 1 GiB x 30 partitions x 1 replica = 30 GiB
+    retention.bytes: 1073741824
+    # Segment size: 512 MiB
+    segment.bytes: 536870912
+    # Cleanup policy: delete old segments
+    cleanup.policy: delete
+    # Compression for storage efficiency
+    compression.type: producer
+    # Message timestamp type
+    message.timestamp.type: CreateTime

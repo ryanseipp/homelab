@@ -1,2 +1,5 @@
 .direnv
 .secrets
+**/talos/controlplane.yaml
+**/talos/talosconfig
+**/talos/worker.yaml

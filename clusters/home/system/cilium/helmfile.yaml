@@ -1,0 +1,113 @@
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+
+releases:
+  - chart: cilium/cilium
+    name: cilium
+    version: 1.18.3
+    namespace: kube-system
+    values:
+      - kubeProxyReplacement: true
+        ipam:
+          mode: kubernetes
+        gatewayAPI:
+          enabled: true
+          enableAlpn: true
+          enableAppProtocol: true
+        l2announcements:
+          enabled: true
+        securityContext:
+          capabilities:
+            ciliumAgent:
+              - CHOWN
+              - KILL
+              - NET_ADMIN
+              - NET_RAW
+              - IPC_LOCK
+              - SYS_ADMIN
+              - SYS_RESOURCE
+              - DAC_OVERRIDE
+              - FOWNER
+              - SETGID
+              - SETUID
+            cleanCiliumState:
+              - NET_ADMIN
+              - SYS_ADMIN
+              - SYS_RESOURCE
+        cgroup:
+          autoMount:
+            enabled: false
+          hostRoot: /sys/fs/cgroup
+        k8sServiceHost: localhost
+        k8sServicePort: 7445
+        prometheus:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+            trustCRDsExist: true
+        operator:
+          replicas: 1
+          prometheus:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              trustCRDsExist: true
+        # Enable Grafana dashboards
+        dashboards:
+          enabled: true
+          label: grafana_dashboard
+          labelValue: "1"
+          annotations:
+            grafana_folder: "Cilium"
+        hubble:
+          enabled: true
+          # Enable Hubble Relay for cluster-wide flow aggregation
+          relay:
+            enabled: true
+            replicas: 2
+          # Enable Hubble UI for visualizing flows and service maps
+          ui:
+            enabled: true
+            replicas: 2
+            ingress:
+              enabled: true
+              className: tailscale
+              hosts:
+                - hubble
+              tls:
+                - hosts:
+                    - hubble
+          # Export Hubble metrics to Prometheus (scraped by your OTLP collector)
+          metrics:
+            enabled:
+              - dns
+              - drop
+              - tcp
+              - flow
+              - port-distribution
+              - icmp
+              - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+            enableOpenMetrics: true
+            serviceMonitor:
+              enabled: true
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              labelValue: "1"
+              annotations:
+                grafana_folder: "Cilium"
+          tls:
+            auto:
+              method: certmanager
+              certManagerIssuerRef:
+                group: cert-manager.io
+                kind: Issuer
+                name: hubble-ca-issuer
+          # Enable L7 visibility for HTTP, gRPC, Kafka
+          observe:
+            enabled:
+              - http
+              - dns
+              - grpc
+              - kafka

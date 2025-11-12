@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: o11y-traces
+# S3 Storage via Rook Ceph ObjectBucketClaims (auto-generates secrets & configmaps)
+# Tempo Helm Chart Templates (environment variables injected via helmfile extraEnv)
+resources:
+  - namespace.yaml
+  - object-storage.yaml
+  - grafana-datasource.yaml
+  - helm/tempo-distributed/templates/compactor/deployment-compactor.yaml
+  - helm/tempo-distributed/templates/compactor/service-compactor.yaml
+  - helm/tempo-distributed/templates/compactor/servicemonitor-compactor.yaml
+  - helm/tempo-distributed/templates/configmap-runtime.yaml
+  - helm/tempo-distributed/templates/configmap-tempo.yaml
+  - helm/tempo-distributed/templates/distributor/deployment-distributor.yaml
+  - helm/tempo-distributed/templates/distributor/service-distributor-discovery.yaml
+  - helm/tempo-distributed/templates/distributor/service-distributor.yaml
+  - helm/tempo-distributed/templates/distributor/servicemonitor-distributor.yaml
+  - helm/tempo-distributed/templates/gossip-ring/service-gossip-ring.yaml
+  - helm/tempo-distributed/templates/ingester/poddisruptionbudget-ingester.yaml
+  - helm/tempo-distributed/templates/ingester/service-ingester-discovery.yaml
+  - helm/tempo-distributed/templates/ingester/service-ingester.yaml
+  - helm/tempo-distributed/templates/ingester/servicemonitor-ingester.yaml
+  - helm/tempo-distributed/templates/ingester/statefulset-ingester.yaml
+  - helm/tempo-distributed/templates/memcached/servicemonitor-memcached.yaml
+  - helm/tempo-distributed/templates/metrics-generator/deployment-metrics-generator.yaml
+  - helm/tempo-distributed/templates/metrics-generator/service-metrics-generator-discovery.yaml
+  - helm/tempo-distributed/templates/metrics-generator/service-metrics-generator.yaml
+  - helm/tempo-distributed/templates/metrics-generator/servicemonitor-metrics-generator.yaml
+  - helm/tempo-distributed/templates/querier/deployment-querier.yaml
+  - helm/tempo-distributed/templates/querier/service-querier.yaml
+  - helm/tempo-distributed/templates/querier/servicemonitor-querier.yaml
+  - helm/tempo-distributed/templates/query-frontend/deployment-query-frontend.yaml
+  - helm/tempo-distributed/templates/query-frontend/service-query-frontend-discovery.yaml
+  - helm/tempo-distributed/templates/query-frontend/service-query-frontend.yaml
+  - helm/tempo-distributed/templates/query-frontend/servicemonitor-query-frontend.yaml
+  - helm/tempo-distributed/templates/serviceaccount.yaml
