@@ -53,3 +53,5 @@ releases:
             serviceMonitor:
               enabled: true
               interval: 30s
+apiVersions:
+  - monitoring.coreos.com/v1

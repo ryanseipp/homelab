@@ -30,6 +30,7 @@ resources:
   - helm/argo-cd/templates/argocd-application-controller/role.yaml
   - helm/argo-cd/templates/argocd-application-controller/rolebinding.yaml
   - helm/argo-cd/templates/argocd-application-controller/serviceaccount.yaml
+  - helm/argo-cd/templates/argocd-application-controller/servicemonitor.yaml
   - helm/argo-cd/templates/argocd-application-controller/statefulset.yaml
   - helm/argo-cd/templates/argocd-applicationset/deployment.yaml
   - helm/argo-cd/templates/argocd-applicationset/metrics.yaml
@@ -37,6 +38,7 @@ resources:
   - helm/argo-cd/templates/argocd-applicationset/rolebinding.yaml
   - helm/argo-cd/templates/argocd-applicationset/service.yaml
   - helm/argo-cd/templates/argocd-applicationset/serviceaccount.yaml
+  - helm/argo-cd/templates/argocd-applicationset/servicemonitor.yaml
   - helm/argo-cd/templates/argocd-configs/argocd-cm.yaml
   - helm/argo-cd/templates/argocd-configs/argocd-cmd-params-cm.yaml
   - helm/argo-cd/templates/argocd-configs/argocd-gpg-keys-cm.yaml
@@ -59,6 +61,7 @@ resources:
   - helm/argo-cd/templates/argocd-repo-server/rolebinding.yaml
   - helm/argo-cd/templates/argocd-repo-server/service.yaml
   - helm/argo-cd/templates/argocd-repo-server/serviceaccount.yaml
+  - helm/argo-cd/templates/argocd-repo-server/servicemonitor.yaml
   - helm/argo-cd/templates/argocd-server/clusterrole.yaml
   - helm/argo-cd/templates/argocd-server/clusterrolebinding.yaml
   - helm/argo-cd/templates/argocd-server/deployment.yaml
@@ -69,6 +72,7 @@ resources:
   - helm/argo-cd/templates/argocd-server/rolebinding.yaml
   - helm/argo-cd/templates/argocd-server/service.yaml
   - helm/argo-cd/templates/argocd-server/serviceaccount.yaml
+  - helm/argo-cd/templates/argocd-server/servicemonitor.yaml
   - helm/argo-cd/templates/crds/crd-application.yaml
   - helm/argo-cd/templates/crds/crd-applicationset.yaml
   - helm/argo-cd/templates/crds/crd-project.yaml
